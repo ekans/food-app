@@ -1,57 +1,82 @@
+let allFoods = [];
+let filteredFoods = [];
+
 async function loadFoodData() {
-    try {
-        const response = await fetch('aliments.md');
-        const markdown = await response.text();
-        return parseMarkdown(markdown);
-    } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
-        return [];
-    }
+  try {
+    const response = await fetch("aliments.md");
+    const markdown = await response.text();
+    return parseMarkdown(markdown);
+  } catch (error) {
+    console.error("Erreur lors du chargement des données:", error);
+    return [];
+  }
 }
 
 function parseMarkdown(markdown) {
-    const foods = [];
-    const lines = markdown.split('\n');
-    
-    let currentFood = null;
-    
-    for (const line of lines) {
-        const trimmedLine = line.trim();
-        
-        // Détection d'un nouvel aliment (titre de niveau 2)
-        if (trimmedLine.startsWith('## ')) {
-            if (currentFood) {
-                foods.push(currentFood);
-            }
-            currentFood = {
-                name: trimmedLine.substring(3).trim(),
-                chargeGlycemique: null
-            };
-        }
-        
-        // Détection de la charge glycémique
-        if (trimmedLine.startsWith('Charge glycémique:') && currentFood) {
-            const value = trimmedLine.replace('Charge glycémique:', '').trim();
-            currentFood.chargeGlycemique = parseInt(value);
-        }
-    }
-    
-    // Ajouter le dernier aliment
-    if (currentFood) {
+  const foods = [];
+  const lines = markdown.split("\n");
+
+  let currentFood = null;
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    // Détection d'un nouvel aliment (titre de niveau 2)
+    if (trimmedLine.startsWith("## ")) {
+      if (currentFood) {
         foods.push(currentFood);
+      }
+      currentFood = {
+        name: trimmedLine.substring(3).trim(),
+        chargeGlycemique: null,
+      };
     }
-    
-    return foods.filter(food => food.chargeGlycemique !== null);
+
+    // Détection de la charge glycémique
+    if (trimmedLine.startsWith("Charge glycémique:") && currentFood) {
+      const value = trimmedLine.replace("Charge glycémique:", "").trim();
+      currentFood.chargeGlycemique = parseInt(value);
+    }
+  }
+
+  // Ajouter le dernier aliment
+  if (currentFood) {
+    foods.push(currentFood);
+  }
+
+  return foods.filter((food) => food.chargeGlycemique !== null);
+}
+
+function filterFoods(searchTerm) {
+  if (!searchTerm.trim()) {
+    return allFoods;
+  }
+
+  const search = searchTerm.toLowerCase();
+  return allFoods.filter((food) => food.name.toLowerCase().includes(search));
+}
+
+function updateFoodCount(count) {
+  const foodCountElement = document.getElementById("food-count");
+  if (count === allFoods.length) {
+    foodCountElement.textContent = `${count} aliment${count > 1 ? "s" : ""} au total`;
+  } else {
+    foodCountElement.textContent = `${count} aliment${count > 1 ? "s" : ""} trouvé${count > 1 ? "s" : ""} sur ${allFoods.length}`;
+  }
 }
 
 function renderFoodList(foods) {
-    const foodListElement = document.getElementById('food-list');
-    const loadingElement = document.getElementById('loading');
-    
-    if (foods.length === 0) {
-        foodListElement.innerHTML = '<p>Aucun aliment trouvé.</p>';
-    } else {
-        const foodItems = foods.map(food => `
+  const foodListElement = document.getElementById("food-list");
+  const loadingElement = document.getElementById("loading");
+  const searchContainer = document.querySelector(".search-container");
+
+  if (foods.length === 0) {
+    foodListElement.innerHTML =
+      '<p class="no-results">Aucun aliment trouvé.</p>';
+  } else {
+    const foodItems = foods
+      .map(
+        (food) => `
             <div class="food-item">
                 <h3 class="food-name">${food.name}</h3>
                 <div class="food-glycemic">
@@ -59,17 +84,37 @@ function renderFoodList(foods) {
                     <span class="value">${food.chargeGlycemique}</span>
                 </div>
             </div>
-        `).join('');
-        
-        foodListElement.innerHTML = foodItems;
-    }
-    
-    loadingElement.style.display = 'none';
-    foodListElement.style.display = 'block';
+        `,
+      )
+      .join("");
+
+    foodListElement.innerHTML = foodItems;
+  }
+
+  updateFoodCount(foods.length);
+
+  loadingElement.style.display = "none";
+  searchContainer.style.display = "block";
+  foodListElement.style.display = "block";
+}
+
+function setupSearch() {
+  const searchInput = document.getElementById("search-input");
+
+  searchInput.addEventListener("input", (e) => {
+    const searchTerm = e.target.value;
+    filteredFoods = filterFoods(searchTerm);
+    renderFoodList(filteredFoods);
+  });
+
+  // Optionnel: focus automatique sur le champ de recherche
+  searchInput.focus();
 }
 
 // Initialisation de l'application
-document.addEventListener('DOMContentLoaded', async () => {
-    const foods = await loadFoodData();
-    renderFoodList(foods);
+document.addEventListener("DOMContentLoaded", async () => {
+  allFoods = await loadFoodData();
+  filteredFoods = allFoods;
+  renderFoodList(filteredFoods);
+  setupSearch();
 });
