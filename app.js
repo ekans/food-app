@@ -76,25 +76,41 @@ function renderFoodList(foods) {
   const loadingElement = document.getElementById("loading");
   const searchContainer = document.querySelector(".search-container");
 
-  if (foods.length === 0) {
-    foodListElement.innerHTML =
-      '<p class="no-results">Aucun aliment trouvé.</p>';
-  } else {
-    const foodItems = foods
-      .map(
-        (food) => `
-            <div class="food-item">
-                <h3 class="food-name">${food.name}</h3>
-                <div class="food-glycemic">
-                    <span class="label">Charge glycémique:</span>
-                    <span class="value ${getGlycemicClass(food.chargeGlycemique)}">${food.chargeGlycemique}</span>
-                </div>
-            </div>
-        `,
-      )
-      .join("");
+  // Clear existing content safely
+  foodListElement.textContent = '';
 
-    foodListElement.innerHTML = foodItems;
+  if (foods.length === 0) {
+    const noResultsElement = document.createElement('p');
+    noResultsElement.className = 'no-results';
+    noResultsElement.textContent = 'Aucun aliment trouvé.';
+    foodListElement.appendChild(noResultsElement);
+  } else {
+    // Create DOM elements safely to prevent XSS
+    foods.forEach(food => {
+      const foodItem = document.createElement('div');
+      foodItem.className = 'food-item';
+
+      const foodName = document.createElement('h3');
+      foodName.className = 'food-name';
+      foodName.textContent = food.name; // Safe text content
+
+      const foodGlycemic = document.createElement('div');
+      foodGlycemic.className = 'food-glycemic';
+
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = 'Charge glycémique:';
+
+      const value = document.createElement('span');
+      value.className = `value ${getGlycemicClass(food.chargeGlycemique)}`;
+      value.textContent = food.chargeGlycemique; // Safe text content
+
+      foodGlycemic.appendChild(label);
+      foodGlycemic.appendChild(value);
+      foodItem.appendChild(foodName);
+      foodItem.appendChild(foodGlycemic);
+      foodListElement.appendChild(foodItem);
+    });
   }
 
   updateFoodCount(foods.length);
