@@ -1,5 +1,4 @@
 let allFoods = [];
-let filteredFoods = [];
 
 async function loadFoodData() {
   try {
@@ -7,62 +6,41 @@ async function loadFoodData() {
     const markdown = await response.text();
     return parseMarkdown(markdown);
   } catch (error) {
-    console.error("Erreur lors du chargement des données:", error);
+    console.error("Error loading data:", error);
     return [];
   }
 }
 
 function parseMarkdown(markdown) {
   const foods = [];
-  const lines = markdown.split("\n");
-
   let currentFood = null;
 
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-
-    // Détection d'un nouvel aliment (titre de niveau 2)
-    if (trimmedLine.startsWith("## ")) {
-      if (currentFood) {
-        foods.push(currentFood);
-      }
-      currentFood = {
-        name: trimmedLine.substring(3).trim(),
-        chargeGlycemique: null,
-      };
-    }
-
-    // Détection de la charge glycémique
-    if (trimmedLine.startsWith("Charge glycémique:") && currentFood) {
-      const value = trimmedLine.replace("Charge glycémique:", "").trim();
-      currentFood.chargeGlycemique = parseInt(value);
+  for (const line of markdown.split("\n")) {
+    const trimmed = line.trim();
+    
+    if (trimmed.startsWith("## ")) {
+      if (currentFood) foods.push(currentFood);
+      currentFood = { name: trimmed.substring(3).trim(), chargeGlycemique: null }; // Extract food name
+    } else if (trimmed.startsWith("Charge glycémique:") && currentFood) { // Parse glycemic load
+      currentFood.chargeGlycemique = parseInt(trimmed.replace("Charge glycémique:", "").trim());
     }
   }
-
-  // Ajouter le dernier aliment
-  if (currentFood) {
-    foods.push(currentFood);
-  }
-
-  return foods.filter((food) => food.chargeGlycemique !== null);
+  
+  if (currentFood) foods.push(currentFood);
+  return foods.filter(food => food.chargeGlycemique !== null); // Only include foods with valid glycemic values
 }
 
 function filterFoods(searchTerm) {
-  if (!searchTerm.trim()) {
-    return allFoods;
-  }
-
-  const search = searchTerm.toLowerCase();
-  return allFoods.filter((food) => food.name.toLowerCase().includes(search));
+  const search = searchTerm.trim().toLowerCase();
+  return search ? allFoods.filter(food => food.name.toLowerCase().includes(search)) : allFoods;
 }
 
 function updateFoodCount(count) {
-  const foodCountElement = document.getElementById("food-count");
-  if (count === allFoods.length) {
-    foodCountElement.textContent = `${count} aliment${count > 1 ? "s" : ""} au total`;
-  } else {
-    foodCountElement.textContent = `${count} aliment${count > 1 ? "s" : ""} trouvé${count > 1 ? "s" : ""} sur ${allFoods.length}`;
-  }
+  const s = count > 1 ? "s" : "";
+  const text = count === allFoods.length 
+    ? `${count} aliment${s} au total`
+    : `${count} aliment${s} trouvé${s} sur ${allFoods.length}`;
+  document.getElementById("food-count").textContent = text;
 }
 
 function getGlycemicClass(value) {
@@ -71,72 +49,61 @@ function getGlycemicClass(value) {
   return "high";
 }
 
-function renderFoodList(foods) {
-  const foodListElement = document.getElementById("food-list");
-  const loadingElement = document.getElementById("loading");
-  const searchContainer = document.querySelector(".search-container");
+function createFoodElement(food) {
+  const item = document.createElement('div');
+  item.className = 'food-item';
+  
+  const name = document.createElement('h3');
+  name.className = 'food-name';
+  name.textContent = food.name; // Safe text insertion to prevent XSS
+  
+  const glycemic = document.createElement('div');
+  glycemic.className = 'food-glycemic';
+  
+  const label = document.createElement('span');
+  label.className = 'label';
+  label.textContent = 'Charge glycémique:';
+  
+  const value = document.createElement('span');
+  value.className = `value ${getGlycemicClass(food.chargeGlycemique)}`;
+  value.textContent = food.chargeGlycemique; // Safe text insertion
+  
+  glycemic.append(label, value);
+  item.append(name, glycemic);
+  return item;
+}
 
-  // Clear existing content safely
-  foodListElement.textContent = '';
+function renderFoodList(foods) {
+  const foodList = document.getElementById("food-list");
+  foodList.textContent = ''; // Clear existing content
 
   if (foods.length === 0) {
-    const noResultsElement = document.createElement('p');
-    noResultsElement.className = 'no-results';
-    noResultsElement.textContent = 'Aucun aliment trouvé.';
-    foodListElement.appendChild(noResultsElement);
+    const noResults = document.createElement('p');
+    noResults.className = 'no-results';
+    noResults.textContent = 'Aucun aliment trouvé.'; // Keep French for users
+    foodList.appendChild(noResults);
   } else {
-    // Create DOM elements safely to prevent XSS
-    foods.forEach(food => {
-      const foodItem = document.createElement('div');
-      foodItem.className = 'food-item';
-
-      const foodName = document.createElement('h3');
-      foodName.className = 'food-name';
-      foodName.textContent = food.name; // Safe text content
-
-      const foodGlycemic = document.createElement('div');
-      foodGlycemic.className = 'food-glycemic';
-
-      const label = document.createElement('span');
-      label.className = 'label';
-      label.textContent = 'Charge glycémique:';
-
-      const value = document.createElement('span');
-      value.className = `value ${getGlycemicClass(food.chargeGlycemique)}`;
-      value.textContent = food.chargeGlycemique; // Safe text content
-
-      foodGlycemic.appendChild(label);
-      foodGlycemic.appendChild(value);
-      foodItem.appendChild(foodName);
-      foodItem.appendChild(foodGlycemic);
-      foodListElement.appendChild(foodItem);
-    });
+    foods.forEach(food => foodList.appendChild(createFoodElement(food)));
   }
 
   updateFoodCount(foods.length);
-
-  loadingElement.style.display = "none";
-  searchContainer.style.display = "block";
-  foodListElement.style.display = "block";
+  // Show the interface after rendering
+  document.getElementById("loading").style.display = "none";
+  document.querySelector(".search-container").style.display = "block";
+  foodList.style.display = "block";
 }
 
 function setupSearch() {
   const searchInput = document.getElementById("search-input");
-
   searchInput.addEventListener("input", (e) => {
-    const searchTerm = e.target.value;
-    filteredFoods = filterFoods(searchTerm);
-    renderFoodList(filteredFoods);
+    renderFoodList(filterFoods(e.target.value));
   });
-
-  // Optionnel: focus automatique sur le champ de recherche
-  searchInput.focus();
+  searchInput.focus(); // Auto-focus search field
 }
 
-// Initialisation de l'application
+// Initialize the application
 document.addEventListener("DOMContentLoaded", async () => {
   allFoods = await loadFoodData();
-  filteredFoods = allFoods;
-  renderFoodList(filteredFoods);
+  renderFoodList(allFoods);
   setupSearch();
 });
