@@ -65,6 +65,12 @@ function updateFoodCount(count) {
   }
 }
 
+function getGlycemicClass(value) {
+  if (value <= 10) return "low";
+  if (value <= 20) return "medium";
+  return "high";
+}
+
 function renderFoodList(foods) {
   const foodListElement = document.getElementById("food-list");
   const loadingElement = document.getElementById("loading");
@@ -81,7 +87,7 @@ function renderFoodList(foods) {
                 <h3 class="food-name">${food.name}</h3>
                 <div class="food-glycemic">
                     <span class="label">Charge glycémique:</span>
-                    <span class="value">${food.chargeGlycemique}</span>
+                    <span class="value ${getGlycemicClass(food.chargeGlycemique)}">${food.chargeGlycemique}</span>
                 </div>
             </div>
         `,

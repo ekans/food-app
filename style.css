@@ -124,11 +124,27 @@ main {
 .value {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #e74c3c;
-    background: #fff5f5;
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
-    border: 2px solid #fadbd8;
+    border: 2px solid;
+}
+
+.value.low {
+    color: #27ae60;
+    background: #f0fff4;
+    border-color: #c8e6c9;
+}
+
+.value.medium {
+    color: #f39c12;
+    background: #fff8e1;
+    border-color: #ffcc80;
+}
+
+.value.high {
+    color: #e74c3c;
+    background: #fff5f5;
+    border-color: #fadbd8;
 }
 
 @media (max-width: 768px) {
