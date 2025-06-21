@@ -16,6 +16,38 @@ header {
   color: white;
   text-align: center;
   padding: 2rem 1rem;
+  position: relative;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.language-switcher {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 0.8rem;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: all 0.3s ease;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.language-switcher:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
 }
 
 header h1 {
@@ -150,6 +182,12 @@ main {
 @media (max-width: 768px) {
   header h1 {
     font-size: 2rem;
+  }
+
+  .language-switcher {
+    position: static;
+    margin-top: 1rem;
+    display: inline-block;
   }
 
   .food-grid {

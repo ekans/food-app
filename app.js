@@ -1,4 +1,60 @@
 let allFoods = [];
+let currentLanguage = 'fr';
+
+const translations = {
+  fr: {
+    title: 'Liste des Aliments - Charge Glycémique',
+    headerTitle: 'Liste des Aliments',
+    headerSubtitle: 'Découvrez la charge glycémique de vos aliments préférés',
+    searchPlaceholder: 'Rechercher un aliment...',
+    loading: 'Chargement des données...',
+    glycemicLoadLabel: 'Charge glycémique:',
+    noResults: 'Aucun aliment trouvé.',
+    foodCount: (count, total) => {
+      const s = count > 1 ? 's' : '';
+      return count === total
+        ? `${count} aliment${s} au total`
+        : `${count} aliment${s} trouvé${s} sur ${total}`;
+    },
+    switchLanguage: '🇺🇸'
+  },
+  en: {
+    title: 'Food List - Glycemic Load',
+    headerTitle: 'Food List', 
+    headerSubtitle: 'Discover the glycemic load of your favorite foods',
+    searchPlaceholder: 'Search for a food...',
+    loading: 'Loading data...',
+    glycemicLoadLabel: 'Glycemic load:',
+    noResults: 'No food found.',
+    foodCount: (count, total) => {
+      const s = count > 1 ? 's' : '';
+      return count === total
+        ? `${count} food${s} total`
+        : `${count} food${s} found out of ${total}`;
+    },
+    switchLanguage: '🇫🇷'
+  }
+};
+
+function detectBrowserLanguage() {
+  const browserLang = navigator.language || navigator.userLanguage;
+  return browserLang.startsWith('en') ? 'en' : 'fr';
+}
+
+function setLanguage(lang) {
+  currentLanguage = lang;
+  localStorage.setItem('language', lang);
+  updateUI();
+}
+
+function getCurrentLanguage() {
+  return localStorage.getItem('language') || detectBrowserLanguage();
+}
+
+function t(key, ...args) {
+  const value = translations[currentLanguage][key];
+  return typeof value === 'function' ? value(...args) : value;
+}
 
 async function loadFoodData() {
   try {
@@ -44,11 +100,7 @@ function filterFoods(searchTerm) {
 }
 
 function updateFoodCount(count) {
-  const s = count > 1 ? "s" : "";
-  const text =
-    count === allFoods.length
-      ? `${count} aliment${s} au total`
-      : `${count} aliment${s} trouvé${s} sur ${allFoods.length}`;
+  const text = t('foodCount', count, allFoods.length);
   document.getElementById("food-count").textContent = text;
 }
 
@@ -71,7 +123,7 @@ function createFoodElement(food) {
 
   const label = document.createElement("span");
   label.className = "label";
-  label.textContent = "Charge glycémique:";
+  label.textContent = t('glycemicLoadLabel');
 
   const value = document.createElement("span");
   value.className = `value ${getGlycemicClass(food.chargeGlycemique)}`;
@@ -89,7 +141,7 @@ function renderFoodList(foods) {
   if (foods.length === 0) {
     const noResults = document.createElement("p");
     noResults.className = "no-results";
-    noResults.textContent = "Aucun aliment trouvé."; // Keep French for users
+    noResults.textContent = t('noResults');
     foodList.appendChild(noResults);
   } else {
     foods.forEach((food) => foodList.appendChild(createFoodElement(food)));
@@ -110,8 +162,32 @@ function setupSearch() {
   searchInput.focus(); // Auto-focus search field
 }
 
+function updateUI() {
+  document.title = t('title');
+  document.querySelector('header h1').textContent = t('headerTitle');
+  document.querySelector('header p').textContent = t('headerSubtitle');
+  document.getElementById('search-input').placeholder = t('searchPlaceholder');
+  document.getElementById('loading').textContent = t('loading');
+  document.getElementById('language-switcher').textContent = t('switchLanguage');
+  
+  if (allFoods.length > 0) {
+    const searchValue = document.getElementById('search-input').value;
+    renderFoodList(filterFoods(searchValue));
+  }
+}
+
+function setupLanguageSwitcher() {
+  const switcher = document.getElementById('language-switcher');
+  switcher.addEventListener('click', () => {
+    setLanguage(currentLanguage === 'fr' ? 'en' : 'fr');
+  });
+}
+
 // Initialize the application
 document.addEventListener("DOMContentLoaded", async () => {
+  currentLanguage = getCurrentLanguage();
+  updateUI();
+  setupLanguageSwitcher();
   allFoods = await loadFoodData();
   renderFoodList(allFoods);
   setupSearch();
