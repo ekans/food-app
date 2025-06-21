@@ -67,7 +67,7 @@ function updateFoodCount(count) {
 
 function getGlycemicClass(value) {
   if (value <= 10) return "low";
-  if (value <= 20) return "medium";
+  if (value <= 19) return "medium";
   return "high";
 }
 
