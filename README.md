@@ -16,23 +16,28 @@ This application allows you to easily view the glycemic load of your favorite fo
 ## Installation and Usage
 
 ### Prerequisites
+
 - A modern web browser
 - A local web server (optional)
 
 ### Running the Application
 
 #### Option 1: Simple local server
+
 ```bash
 python -m http.server 8000
 ```
+
 Then open http://localhost:8000
 
 #### Option 2: With Node.js
+
 ```bash
 npx serve
 ```
 
 #### Option 3: Direct browser access
+
 Open the `index.html` file directly in your browser.
 
 ## Project Structure
@@ -53,12 +58,15 @@ To add new foods, modify the `aliments.md` file following this format:
 
 ```markdown
 ## Food Name
+
 Charge glycémique: NUMERIC_VALUE
 ```
 
 Example:
+
 ```markdown
 ## Apple
+
 Charge glycémique: 6
 ```
 

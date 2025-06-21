@@ -30,8 +30,10 @@ This is a static HTML/CSS/JavaScript application with no build system:
 ## Data Structure
 
 The markdown parser expects this format in `aliments.md`:
+
 ```markdown
 ## Food Name
+
 Charge glycémique: NUMBER
 ```
 

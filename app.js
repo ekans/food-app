@@ -17,29 +17,38 @@ function parseMarkdown(markdown) {
 
   for (const line of markdown.split("\n")) {
     const trimmed = line.trim();
-    
+
     if (trimmed.startsWith("## ")) {
       if (currentFood) foods.push(currentFood);
-      currentFood = { name: trimmed.substring(3).trim(), chargeGlycemique: null }; // Extract food name
-    } else if (trimmed.startsWith("Charge glycémique:") && currentFood) { // Parse glycemic load
-      currentFood.chargeGlycemique = parseInt(trimmed.replace("Charge glycémique:", "").trim());
+      currentFood = {
+        name: trimmed.substring(3).trim(),
+        chargeGlycemique: null,
+      }; // Extract food name
+    } else if (trimmed.startsWith("Charge glycémique:") && currentFood) {
+      // Parse glycemic load
+      currentFood.chargeGlycemique = parseInt(
+        trimmed.replace("Charge glycémique:", "").trim(),
+      );
     }
   }
-  
+
   if (currentFood) foods.push(currentFood);
-  return foods.filter(food => food.chargeGlycemique !== null); // Only include foods with valid glycemic values
+  return foods.filter((food) => food.chargeGlycemique !== null); // Only include foods with valid glycemic values
 }
 
 function filterFoods(searchTerm) {
   const search = searchTerm.trim().toLowerCase();
-  return search ? allFoods.filter(food => food.name.toLowerCase().includes(search)) : allFoods;
+  return search
+    ? allFoods.filter((food) => food.name.toLowerCase().includes(search))
+    : allFoods;
 }
 
 function updateFoodCount(count) {
   const s = count > 1 ? "s" : "";
-  const text = count === allFoods.length 
-    ? `${count} aliment${s} au total`
-    : `${count} aliment${s} trouvé${s} sur ${allFoods.length}`;
+  const text =
+    count === allFoods.length
+      ? `${count} aliment${s} au total`
+      : `${count} aliment${s} trouvé${s} sur ${allFoods.length}`;
   document.getElementById("food-count").textContent = text;
 }
 
@@ -50,24 +59,24 @@ function getGlycemicClass(value) {
 }
 
 function createFoodElement(food) {
-  const item = document.createElement('div');
-  item.className = 'food-item';
-  
-  const name = document.createElement('h3');
-  name.className = 'food-name';
+  const item = document.createElement("div");
+  item.className = "food-item";
+
+  const name = document.createElement("h3");
+  name.className = "food-name";
   name.textContent = food.name; // Safe text insertion to prevent XSS
-  
-  const glycemic = document.createElement('div');
-  glycemic.className = 'food-glycemic';
-  
-  const label = document.createElement('span');
-  label.className = 'label';
-  label.textContent = 'Charge glycémique:';
-  
-  const value = document.createElement('span');
+
+  const glycemic = document.createElement("div");
+  glycemic.className = "food-glycemic";
+
+  const label = document.createElement("span");
+  label.className = "label";
+  label.textContent = "Charge glycémique:";
+
+  const value = document.createElement("span");
   value.className = `value ${getGlycemicClass(food.chargeGlycemique)}`;
   value.textContent = food.chargeGlycemique; // Safe text insertion
-  
+
   glycemic.append(label, value);
   item.append(name, glycemic);
   return item;
@@ -75,15 +84,15 @@ function createFoodElement(food) {
 
 function renderFoodList(foods) {
   const foodList = document.getElementById("food-list");
-  foodList.textContent = ''; // Clear existing content
+  foodList.textContent = ""; // Clear existing content
 
   if (foods.length === 0) {
-    const noResults = document.createElement('p');
-    noResults.className = 'no-results';
-    noResults.textContent = 'Aucun aliment trouvé.'; // Keep French for users
+    const noResults = document.createElement("p");
+    noResults.className = "no-results";
+    noResults.textContent = "Aucun aliment trouvé."; // Keep French for users
     foodList.appendChild(noResults);
   } else {
-    foods.forEach(food => foodList.appendChild(createFoodElement(food)));
+    foods.forEach((food) => foodList.appendChild(createFoodElement(food)));
   }
 
   updateFoodCount(foods.length);
