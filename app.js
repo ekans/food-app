@@ -9,6 +9,7 @@ const translations = {
     searchPlaceholder: 'Rechercher un aliment...',
     loading: 'Chargement des données...',
     glycemicLoadLabel: 'Charge glycémique:',
+    portionLabel: 'Portion :',
     noResults: 'Aucun aliment trouvé.',
     foodCount: (count, total) => {
       const s = count > 1 ? 's' : '';
@@ -20,11 +21,12 @@ const translations = {
   },
   en: {
     title: 'Food List - Glycemic Load',
-    headerTitle: 'Food List', 
+    headerTitle: 'Food List',
     headerSubtitle: 'Discover the glycemic load of your favorite foods',
     searchPlaceholder: 'Search for a food...',
     loading: 'Loading data...',
     glycemicLoadLabel: 'Glycemic load:',
+    portionLabel: 'Portion:',
     noResults: 'No food found.',
     foodCount: (count, total) => {
       const s = count > 1 ? 's' : '';
@@ -79,12 +81,16 @@ function parseMarkdown(markdown) {
       currentFood = {
         name: trimmed.substring(3).trim(),
         chargeGlycemique: null,
+        portion: "N/A", // Default portion
       }; // Extract food name
     } else if (trimmed.startsWith("Charge glycémique:") && currentFood) {
       // Parse glycemic load
       currentFood.chargeGlycemique = parseInt(
         trimmed.replace("Charge glycémique:", "").trim(),
       );
+    } else if (trimmed.startsWith("Portion:") && currentFood) {
+      // Parse portion
+      currentFood.portion = trimmed.replace("Portion:", "").trim();
     }
   }
 
@@ -130,7 +136,20 @@ function createFoodElement(food) {
   value.textContent = food.chargeGlycemique; // Safe text insertion
 
   glycemic.append(label, value);
-  item.append(name, glycemic);
+
+  const portionDiv = document.createElement("div");
+  portionDiv.className = "food-portion";
+
+  const portionLabel = document.createElement("span");
+  portionLabel.className = "label";
+  portionLabel.textContent = t('portionLabel');
+
+  const portionValue = document.createElement("span");
+  portionValue.className = "value"; // Add styling if needed, e.g. based on portion size
+  portionValue.textContent = food.portion; // Safe text insertion
+
+  portionDiv.append(portionLabel, portionValue);
+  item.append(name, glycemic, portionDiv);
   return item;
 }
 
