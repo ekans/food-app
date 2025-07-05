@@ -142,6 +142,8 @@ main {
   padding-bottom: 0.5rem;
 }
 
+/* Removed .food-portion class as it's no longer used */
+
 .food-glycemic {
   display: flex;
   justify-content: space-between;
