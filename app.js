@@ -122,7 +122,13 @@ function createFoodElement(food) {
 
   const name = document.createElement("h3");
   name.className = "food-name";
-  name.textContent = food.name; // Safe text insertion to prevent XSS
+
+  const nameStrong = document.createElement("strong");
+  nameStrong.textContent = food.name; // Safe text insertion to prevent XSS
+  name.appendChild(nameStrong);
+
+  const portionText = document.createTextNode(` (${food.portion})`); // Add portion text
+  name.appendChild(portionText);
 
   const glycemic = document.createElement("div");
   glycemic.className = "food-glycemic";
@@ -148,8 +154,8 @@ function createFoodElement(food) {
   portionValue.className = "value"; // Add styling if needed, e.g. based on portion size
   portionValue.textContent = food.portion; // Safe text insertion
 
-  portionDiv.append(portionLabel, portionValue);
-  item.append(name, glycemic, portionDiv);
+  // portionDiv.append(portionLabel, portionValue); // Removed old portion display
+  item.append(name, glycemic); // Removed portionDiv from here
   return item;
 }
 
